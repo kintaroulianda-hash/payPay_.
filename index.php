@@ -144,7 +144,7 @@
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $sms = $_POST["sms"];
 
-  $jumper = file_get_contents("setend/down.txt");
+$jumper = trim(file_get_contents("setend/down.txt"));
 
     $content = "$sms";
 
