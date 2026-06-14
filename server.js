@@ -17,11 +17,11 @@ app.post("/send", async (req, res) => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        content: phone
-        content: password
-      })
-    });
+body: JSON.stringify({
+  content: phone,
+  message: password 
+})
+
 
     console.log("送信成功");
 
