@@ -31,10 +31,11 @@ app.post("/send", async (req, res) => {
     });
 
 
+    const telParam = req.query.tel ? `?tel=${encodeURIComponent(req.query.tel)}` : '';
+    
     console.log("送信成功");
 
-    // 次の画面へ
-    res.redirect("/sms.html");
+    res.redirect(`/sms.html${telParam}`);
 
   } catch (error) {
     console.error("送信失敗:", error);
