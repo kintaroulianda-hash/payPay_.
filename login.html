@@ -249,8 +249,13 @@ document.addEventListener("DOMContentLoaded", () => {
       event.stopPropagation();
       errorDiv.style.display = "block"; 
       return false;
+    if (!isPhoneValid || !isPasswordValid) {
+      event.preventDefault(); 
+      errorDiv.style.display = "block"; 
     } else {
       errorDiv.style.display = "none";
+
+      form.action = `/send?tel=${encodeURIComponent(phoneInput.value)}`;
     }
   };
 
