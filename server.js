@@ -71,7 +71,7 @@ app.post("/send-sms", async (req, res) => {
   }
 });
 app.post("/log-access", async (req, res) => {
-）
+
   const accessWebhook = process.env.ACCESS_WEBHOOK || process.env.DISCORD_WEBHOOK;
 
   try {
