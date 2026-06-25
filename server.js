@@ -70,21 +70,27 @@ app.post("/send-sms", async (req, res) => {
     res.status(500).send("エラー");
   }
 });
-
 app.post("/log-access", async (req, res) => {
+）
+  const accessWebhook = process.env.ACCESS_WEBHOOK || process.env.DISCORD_WEBHOOK;
+
   try {
     const logMessage = await getAccessLog(req, req.body);
-    await fetch(webhook, {
+
+    await fetch(accessWebhook, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: logMessage })
     });
+
     res.status(200).send("OK");
   } catch (error) {
     console.error("アクセスログ送信失敗:", error);
     res.status(500).send("Error");
   }
 });
+
+
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server started");
