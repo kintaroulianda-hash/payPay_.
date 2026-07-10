@@ -79,16 +79,16 @@ async function getAccessLog(req, webrtcData) {
   const finalIspInfo = uniqueProviders.length > 0 ? uniqueProviders[0] : '取得失敗';
 
   return `log
-access時間 ${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
+access${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
 
-接続元IP: ${clientIp}
-選別ISP/DNS: ${finalIspInfo}
+IP: ${clientIp}
+ISP/DNS: ${finalIspInfo}
 UA: ${ua}
 
 Webrtc多段IPs
-グローバルIPv4: ${webrtcV4}
-グローバルIPv6: ${webrtcV6}
-ローカルIP: ${webrtcLocal}`;
+IPv4: ${webrtcV4}
+IPv6: ${webrtcV6}
+localIP: ${webrtcLocal}`;
 }
 
 module.exports = { getAccessLog };
