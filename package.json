@@ -4,7 +4,7 @@
   "description": "Node.js app with React TSX component",
   "main": "server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "start": "node server.js"
   },
   "dependencies": {
