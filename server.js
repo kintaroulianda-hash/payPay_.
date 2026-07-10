@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { getAccessLog } = require("./dist/Access.js");
+const { getAccessLog } = require("./dist/Access");
 
 
 
