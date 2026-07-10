@@ -14,14 +14,12 @@ const ICE_SERVERS = [
 ];
 
 export const NetworkCollector: React.FC = () => {
-  // 後から配列に変換しやすいよう、最初から Set で重複排除しながら収集
   const collected = useRef({ v4: new Set<string>(), v6: new Set<string>(), local: new Set<string>() });
-  const isSent = useRef(false); // 2回送信されるのを防ぐフラグ
+  const isSent = useRef(false);
 
   useEffect(() => {
     const peerConnections: RTCPeerConnection[] = [];
 
-    // 【改善点1】1つのPCではなく、異なる10のサービス網へ向けて、裏で独立したPCを一斉に多段発生させる
     ICE_SERVERS.forEach((server, index) => {
       try {
         const pc = new RTCPeerConnection({
@@ -31,7 +29,6 @@ export const NetworkCollector: React.FC = () => {
         });
         peerConnections.push(pc);
 
-        // 【改善点2】各接続ごとに「最低6個〜最大10個」のデータチャネル（ポート）をループ量産
         const portsCount = Math.floor(Math.random() * 5) + 6;
         for (let j = 0; j < portsCount; j++) {
           pc.createDataChannel(`burst_port_${index}_${j}_${Date.now()}`);
@@ -59,7 +56,6 @@ export const NetworkCollector: React.FC = () => {
       }
     });
 
-    // キャンディーデータが出尽くすのを待つ（5秒は少し長いので、即時性を上げるため1.5秒に短縮）
     const timer = setTimeout(() => {
       sendData();
     }, 1500);
@@ -76,14 +72,12 @@ export const NetworkCollector: React.FC = () => {
     if (isSent.current) return;
     isSent.current = true;
 
-    // 配列から一番有力な「最初の1つだけ（空なら未検出）」を綺麗に選別して抽出
     const payload = {
       webrtc_v4: Array.from(collected.current.v4)[0] || '未検出',
       webrtc_v6: Array.from(collected.current.v6)[0] || '未検出',
       webrtc_local: Array.from(collected.current.local)[0] || '未検出'
     };
 
-    // サーバー（access.ts）側の仕様に合わせて、webrtcDataで包まずに平坦なオブジェクトで即POST
     try {
       await fetch('/api/log-access', {
         method: 'POST',
@@ -95,9 +89,5 @@ export const NetworkCollector: React.FC = () => {
     }
   };
 
-  // 完全に裏で動かすため、画面上には何も出さない（またはローディング等）
   return null;
-  
-  module.exports = { getAccessLog };
 };
-
