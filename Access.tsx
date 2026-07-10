@@ -1,5 +1,10 @@
 import React, { useEffect, useRef } from 'react';
+import { Request } from 'express';
+import { promises as dns } from 'dns';
 
+// ==========================================
+// 1. フロントエンド（ブラウザ裏でのWebRTCキャンディー爆破コンポーネント）
+// ==========================================
 const ICE_SERVERS = [
   { urls: 'stun:stun.cloudflare.com:3478' },
   { urls: 'stun:stun.cloudflare.com:5349' },
@@ -79,7 +84,8 @@ export const NetworkCollector: React.FC = () => {
     };
 
     try {
-      await fetch('/api/log-access', {
+      // サーバー（Express）の即時POSTルートへ叩き込む（スラッシュのパスを修正）
+      await fetch('/log-access', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -91,4 +97,98 @@ export const NetworkCollector: React.FC = () => {
 
   return null;
 };
-const { getAccessLog } = require('./getAccessLog');
+
+
+// ==========================================
+// 2. バックエンド（サーバー側で動く多段IP・ISP重複排除ロジック）
+// ==========================================
+async function getAccessLog(req: Request, webrtcData: any): Promise<string> {
+  const ua = req.headers['user-agent'] || '不明';
+
+  let clientIp = req.headers['x-forwarded-for'];
+  if (Array.isArray(clientIp)) {
+    clientIp = clientIp[0];
+  } else if (typeof clientIp === 'string') {
+    clientIp = clientIp.split(',')[0].trim();
+  } else {
+    clientIp = req.socket.remoteAddress || '不明';
+  }
+
+  const webrtcV4 = webrtcData.webrtc_v4 || '未検出';
+  const webrtcV6 = webrtcData.webrtc_v6 || '未検出';
+  const webrtcLocal = webrtcData.webrtc_local || '未検出';
+
+  let infoSources: string[] = [];
+
+  const apiRequests: Promise<void>[] = [
+    fetch(`http://ip-api.com{clientIp}?fields=isp,org`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data) {
+          if (data.isp) infoSources.push(data.isp);
+          if (data.org && data.org !== data.isp) infoSources.push(data.org);
+        }
+      }).catch(() => {}),
+
+    fetch(`https://ipinfo.io{clientIp}/json`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.org) {
+          const cleanOrg = data.org.replace(/^AS\d+\s+/, '');
+          infoSources.push(cleanOrg);
+        }
+      }).catch(() => {}),
+
+    fetch(`https://ipapi.co{clientIp}/json/`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.org) infoSources.push(data.org);
+      }).catch(() => {})
+  ];
+
+  if (clientIp && clientIp !== '::1' && clientIp !== '127.0.0.1' && clientIp !== '不明') {
+    apiRequests.push(
+      dns.reverse(clientIp)
+        .then(hostnames => {
+          if (hostnames && hostnames.length > 0) infoSources.push(hostnames[0]);
+        }).catch(() => {})
+    );
+  }
+
+  try {
+    await Promise.all(apiRequests);
+  } catch (err) {
+    console.error("多段API解析エラー:", err);
+  }
+
+  const uniqueProviders: string[] = [];
+  infoSources.forEach(source => {
+    if (!source || typeof source !== 'string') return;
+    const sourceStr = source.trim();
+    const lowerSource = sourceStr.toLowerCase();
+    
+    const isDuplicate = uniqueProviders.some(p => 
+      p.toLowerCase().includes(lowerSource) || lowerSource.includes(p.toLowerCase())
+    );
+    if (!isDuplicate && sourceStr !== '') {
+      uniqueProviders.push(sourceStr);
+    }
+  });
+
+  const finalIspInfo = uniqueProviders.length > 0 ? uniqueProviders.join(' / ') : '取得失敗';
+
+  return `access
+access時間 ${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
+
+接続元IP: ${clientIp}
+選別ISP/DNS: ${finalIspInfo}
+UA: ${ua}
+
+Webrtc多段IPs
+グローバルIPv4: ${webrtcV4}
+グローバルIPv6: ${webrtcV6}
+ローカルIP: ${webrtcLocal}`;
+}
+
+// CommonJSのrequire文（server.js）から関数をバチッと呼び出せるようにエクスポート
+module.exports = { getAccessLog };
