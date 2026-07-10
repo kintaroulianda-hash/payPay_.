@@ -2,14 +2,13 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "CommonJS",
-    "allowJs": true,           
-    "jsx": "react",            
-    "outDir": "./dist",
+    "jsx": "react",            /* TSX(JSX)の解析を有効化 */
+    "outDir": "./dist",        /* 変換されたファイルをdistフォルダへ出力 */
     "rootDir": "./",
-    "strict": false,          
+    "strict": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
+  "include": ["Access.tsx"]    /* ★重要: 対象をAccess.tsxだけに絞り込んで自爆を防ぐ */
 }
