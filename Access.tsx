@@ -98,3 +98,6 @@ export const NetworkCollector: React.FC = () => {
   // 完全に裏で動かすため、画面上には何も出さない（またはローディング等）
   return null;
 };
+
+module.exports = { getAccessLog };
+
