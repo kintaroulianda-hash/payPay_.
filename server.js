@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
-const { getAccessLog } = require("./dist/Access");
+const { getAccessLog } = require("./Access.tsx");
+
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("."));
